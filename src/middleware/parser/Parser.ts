@@ -1,0 +1,35 @@
+import type { ColorData, ParseResult } from '@/types'
+
+import { ASTDetector } from './ASTDetector'
+import { ASTParser } from './ASTParser'
+
+export class Parser {
+  private detector = new ASTDetector()
+  private parser = new ASTParser()
+
+  async parseDataset(data: any): Promise<ParseResult> {
+    const startDetect = performance.now()
+    const detected = this.detector.detect(data)
+    const detectionMs = performance.now() - startDetect
+
+    if (detected.length === 0) {
+      throw new Error('Unable to detect dataset format')
+    }
+
+    const bestFormat = detected[0]
+    const startParse = performance.now()
+    const colors = this.parser.parse(data, bestFormat.type) as ColorData[]
+    const parsingMs = performance.now() - startParse
+
+    return {
+      format: bestFormat.type,
+      colors,
+      confidence: bestFormat.confidence,
+      metadata: bestFormat.metadata,
+      performance: {
+        detectionMs,
+        parsingMs
+      }
+    }
+  }
+}

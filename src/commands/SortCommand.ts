@@ -1,0 +1,141 @@
+import { ColorData, CommandContext, SortResult, SortStats } from '@/types'
+
+import { Command } from '../core/Command'
+import { ProgressBar } from '../utils/ProgressBar'
+import { Logger } from '../utils/Logger'
+
+export class SortCommand extends Command {
+  private comparisons: number = 0
+
+  constructor() {
+    super(
+      'sort',
+      '<dataset> <output>',
+      'Сортировка цветов по name, hex или hue (стабильная O(n log n))',
+      (_args: string[], _options: Record<string, any>, _flags: string[], ctx: CommandContext) =>
+        this.perform(ctx.parsedDatasets!, ctx.parseMetadata!, ctx), {
+        allowUnknownOptions: false,
+        strict: true,
+        schema: {
+          options: {},
+          args: [
+            { name: 'dataset', required: true, type: 'path'  },
+            { name: 'output', required: true, type: 'output' }
+          ]
+        }
+      }
+    )
+
+    this.option('-o, --output <path>', 'Сохранить результат')
+      .option('--format <format>', 'Формат (json|ts)', 'ts')
+      .option('--by <field>', 'Поле сортировки: name|hex|hue', 'name')
+      .option('--reverse, -r', 'Обратный порядок')
+      .option('--stable', 'Стабильная сортировка (по умолчанию)')
+      .validate(({ args }) => !args[0]
+        ? '❌ Укажите путь к датасету: sort <dataset> <output>'
+        : true
+      )
+      .validate(({ args, options }) => !(options.output || options.o || args[1])
+        ? '❌ Укажите путь для сохранения: sort <dataset> <output>'
+        : true
+      )
+  }
+
+  async perform(
+    datasets: Record<string, ColorData[]>,
+    _metadata: Record<string, any>,
+    { args, options, logger }: CommandContext
+  ): Promise<SortResult> {
+    const colors = datasets[args[0]]
+    const sortBy = (options.by || 'name') as 'name' | 'hex' | 'hue'
+    const reverse = options.reverse || options.r
+
+    logger.info(`🔤 Сортировка по "${sortBy}" ${reverse ? '(обратно)' : ''}...`)
+    logger.info(`📊 Цветов: ${colors.length}`)
+
+    const result = this.sortData(colors, sortBy, reverse, logger)
+
+    logger.success(`✅ Отсортировано: ${result.stats.original} → ${result.stats.sorted}`)
+    this.printStats(result.stats, logger)
+
+    return result
+  }
+
+  sortData(
+    data: ColorData[],
+    sortBy: 'name'|'hex'|'hue',
+    reverse: boolean,
+    logger: Logger
+  ): SortResult {
+    this.comparisons = 0
+
+    const progress = new ProgressBar({ total: data.length, width: 40 })
+    const start = performance.now()
+
+    const sorted = [...data].sort((a, b) => {
+      const aKey = this.getSortKey(a, sortBy)
+      const bKey = this.getSortKey(b, sortBy)
+
+      this.update(progress)
+
+      if (aKey < bKey) return reverse ?  1 : -1
+      if (aKey > bKey) return reverse ? -1 :  1
+
+      return 0
+    })
+
+    progress.processing()
+
+    const finish = performance.now()
+    logger.info(`PERFORMANCE: ${finish - start} ms`)
+
+    return {
+      data: sorted,
+      stats: {
+        original: data.length,
+        sorted: sorted.length,
+        field: sortBy,
+        reverse,
+        uniqueValues: new Set(
+          sorted.map(c => this.getSortKey(c, sortBy))
+        ).size
+      }
+    }
+  }
+
+  private getSortKey(color: ColorData, sortBy: 'name' | 'hex' | 'hue'): string | number {
+    switch (sortBy) {
+      case 'name':
+        return color.name.toLowerCase()
+      case 'hex':
+        return color.hex.toLowerCase()
+      case 'hue':
+        return color.hsl?.h ?? 0
+      default:
+        return color.name.toLowerCase()
+    }
+  }
+
+  update(progress: ProgressBar): void {
+    this.comparisons++
+
+    progress.accumulate(Math.round(
+      Math.min(100, (this.comparisons / progress.total) * 100)
+    ))
+
+    progress.update()
+  }
+
+  printStats(stats: SortStats, logger: any) {
+    logger.info('\n📊 СТАТИСТИКА СОРТИРОВКИ:')
+    logger.info(`Поле:        ${stats.field}${stats.reverse ? ' (↕️)' : ''}`)
+    logger.info(`Всего:       ${stats.original}`)
+
+    if (stats.field === 'hue') {
+      const uniquePct = ((stats.uniqueValues / stats.original) * 100).toFixed(1)
+      logger.info(`Уникальных hue: ${stats.uniqueValues} (${uniquePct}%)`)
+    } else {
+      logger.info(`Уникальных:    ${stats.uniqueValues}`)
+    }
+  }
+}
