@@ -1,22 +1,9 @@
-import { CommandContext, ColorData } from '@/types'
+import { CommandContext, ColorData, PriorityMergeResult, PriorityMergeStats } from '@/types'
+
 import { Command } from '../core/Command'
 import { Logger } from '../utils/Logger'
 
 import { writeFile } from 'fs/promises'
-
-interface PriorityMergeStats {
-  originalPrimary: number
-  originalSecondary: number
-  totalUnique: number
-  skippedFromSecondary: number
-  skipRate: string
-  deltaEThreshold: number
-}
-
-interface PriorityMergeResult {
-  data: ColorData[]
-  stats: PriorityMergeStats
-}
 
 export class PriorityMergeCommand extends Command {
   constructor() {
@@ -30,7 +17,7 @@ export class PriorityMergeCommand extends Command {
         strict: true,
         schema: {
           args: [
-            { name: 'primary', required: true, type: 'path' },
+            { name: 'primary', required: true, type: 'path'   },
             { name: 'secondary', required: true, type: 'path' },
             { name: 'output', required: false, type: 'output' }
           ]
@@ -59,6 +46,7 @@ export class PriorityMergeCommand extends Command {
 
     const primaryColors = datasets[args[0]]
     const secondaryColors = datasets[args[1]]
+
     const threshold = parseFloat(options.threshold as string) || 2.3
     const showReport = options.report
 
@@ -111,9 +99,8 @@ export class PriorityMergeCommand extends Command {
     // 3. Добавляем только уникальные из secondary
     const uniqueFromSecondary = secondary.filter(c => !skippedHexes.has(c.hex))
 
-    const merged = [...primary, ...uniqueFromSecondary].sort((a, b) =>
-      a.hex.localeCompare(b.hex)
-    )
+    const merged = [...primary, ...uniqueFromSecondary]
+      .sort((a, b) => a.hex.localeCompare(b.hex))
 
     const stats: PriorityMergeStats = {
       originalPrimary: primary.length,

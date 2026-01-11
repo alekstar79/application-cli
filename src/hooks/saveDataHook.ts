@@ -13,24 +13,42 @@ export const saveDataHook: HookHandler = async (
   }
 
   // 1. ИЗ АРГУМЕНТОВ (MergeCommand: <output> <input1> <input2>)
+  // const schema = command.config.schema
+  // if (schema?.args?.[0]?.type === 'output' && args[0]) {
+  //   const outputPath = args[0]
+  //   const format = options?.format || 'ts'
+  //
+  //   logger.info(`💾 Saving ${result.data.length} colors to ${outputPath}`)
+  //   await dataset.save(result.data, outputPath, format, logger)
+  //   logger.success(`✅ Saved: ${outputPath}`)
+  //   return
+  // }
+  //
+  // // 2. ОБЫЧНЫЕ КОМАНДЫ: <input> <output>
+  // let outputPath: string | undefined
+  // if (schema?.args?.[1]?.type === 'output' && args[1]) {
+  //   outputPath = args[1]
+  // }
+  // // 3. --output / -o
+  // else if (options?.output || options?.o) {
+  //   outputPath = options.output || options.o
+  // }
+
   const schema = command.config.schema
-  if (schema?.args?.[0]?.type === 'output' && args[0]) {
-    const outputPath = args[0]
-    const format = options?.format || 'ts'
-
-    logger.info(`💾 Saving ${result.data.length} colors to ${outputPath}`)
-    await dataset.save(result.data, outputPath, format, logger)
-    logger.success(`✅ Saved: ${outputPath}`)
-    return
-  }
-
-  // 2. ОБЫЧНЫЕ КОМАНДЫ: <input> <output>
   let outputPath: string | undefined
-  if (schema?.args?.[1]?.type === 'output' && args[1]) {
-    outputPath = args[1]
+
+  // ЛОГИКА 1: Ищем output по схеме (args[N].type === 'output')
+  if (schema?.args) {
+    for (let i = 0; i < schema.args.length; i++) {
+      if (schema.args[i].type === 'output' && args[i]) {
+        outputPath = args[i]
+        break
+      }
+    }
   }
-  // 3. --output / -o
-  else if (options?.output || options?.o) {
+
+  // ЛОГИКА 2: --output / -o
+  if (!outputPath && (options?.output || options?.o)) {
     outputPath = options.output || options.o
   }
 

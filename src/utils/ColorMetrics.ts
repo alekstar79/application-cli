@@ -144,7 +144,22 @@ export class ColorMetrics {
       return 'gray'
     }
 
-    // 2. OKLab классификация
+    // 2. HSL HUE напрямую для базовой классификации
+    let hslBaseFamily: Family
+    if (h >= 0 && h < 15) hslBaseFamily = 'red'
+    else if (h < 30) hslBaseFamily = 'orange'
+    else if (h < 60) hslBaseFamily = 'yellow'
+    else if (h < 90) hslBaseFamily = 'chartreuse'
+    else if (h < 150) hslBaseFamily = 'green'
+    else if (h < 180) hslBaseFamily = 'springgreen'
+    else if (h < 210) hslBaseFamily = 'cyan'
+    else if (h < 240) hslBaseFamily = 'azure'
+    else if (h < 270) hslBaseFamily = 'blue'
+    else if (h < 300) hslBaseFamily = 'violet'
+    else if (h < 330) hslBaseFamily = 'magenta'
+    else hslBaseFamily = 'rose'
+
+    // OKLab классификация (только для хромы и special cases)
     const rgb = this.hexToRgb(this.hslToHex({ h, s, l }))
     const [L, a, bOklab] = this.rgbToOklab(rgb)
 
@@ -152,137 +167,137 @@ export class ColorMetrics {
     const chroma = Math.sqrt(a * a + bOklab * bOklab)
     if (chroma < 0.045) return 'neutral'
 
-    // OKLab Hue (перцептивно равномерный)
-    let hueOklab = Math.atan2(bOklab, a) * 180 / Math.PI
-    if (hueOklab < 0) hueOklab += 360
+    // 3. СПЕЦИАЛИЗИРОВАННЫЕ КАТЕГОРИИ на основе HSL base
 
-    // 3. Базовые семейства (OKLab) (тестировано на 10k палитрах)
-    let baseFamily: Family
-    if (hueOklab >= 335 || hueOklab <= 25) baseFamily = 'red'
-    else if (hueOklab < 55) baseFamily = 'orange'
-    else if (hueOklab < 85) baseFamily = 'yellow'
-    else if (hueOklab < 115) baseFamily = 'chartreuse'
-    else if (hueOklab < 145) baseFamily = 'green'
-    else if (hueOklab < 175) baseFamily = 'springgreen'
-    else if (hueOklab < 200) baseFamily = 'cyan'
-    else if (hueOklab < 230) baseFamily = 'azure'
-    else if (hueOklab < 265) baseFamily = 'blue'
-    else if (hueOklab < 295) baseFamily = 'violet'
-    else if (hueOklab < 325) baseFamily = 'magenta'
-    else baseFamily = 'rose'
-
-    // СПЕЦИАЛЬНЫЕ КАТЕГОРИИ (улучшены OKLab)
+    // PASTEL (низкая насыщенность + высокая яркость)
     if (s < 30 && l > 60) return 'pastel'
-    if (s > 80 && l > 80) return 'neon'
 
+    // NEON (Только кислотные цвета)
+    if (s > 90 && l > 40 && l < 65 && chroma > 0.25) {
+      // Только lime, magenta, cyan hue диапазоны
+      if (h >= 60 && h <= 90) return 'neon'     // neon lime
+      if (h >= 270 && h <= 330) return 'neon'   // neon magenta
+      if (h >= 165 && h <= 210) return 'neon'   // neon cyan
+    }
 
     // Brown (коричневые) - OKLab хрома + теплые тона
-    if (chroma < 0.15 && ['orange', 'yellow', 'red'].includes(baseFamily) && l < 70) {
+    if (chroma < 0.15 && ['orange', 'yellow', 'red'].includes(hslBaseFamily) && l < 70) {
       return 'brown'
     }
 
     // Pink (розовые) - высокая L + средняя хрома
-    if (['red', 'rose', 'magenta'].includes(baseFamily) &&
+    if (['red', 'rose', 'magenta'].includes(hslBaseFamily) &&
       L > 0.75 && chroma > 0.08 && chroma < 0.22) {
       return 'pink'
     }
 
     // Metallic (металлические желтые/оранжевые)
-    if (['yellow', 'orange'].includes(baseFamily) &&
+    if (['yellow', 'orange'].includes(hslBaseFamily) &&
       s > 20 && s < 70 && l > 50) {
       return 'metallic'
     }
 
     // Skin tones (телесные)
-    if (['orange', 'yellow', 'brown'].includes(baseFamily) &&
+    if (['orange', 'yellow', 'brown'].includes(hslBaseFamily) &&
       s > 20 && s < 70 && l > 40 && l < 90) {
       return 'skin'
     }
 
     // Jewel tones (драгоценные)
-    if (['red', 'green', 'blue', 'purple', 'magenta'].includes(baseFamily) &&
+    if (['red', 'green', 'blue', 'purple', 'magenta'].includes(hslBaseFamily) &&
       s > 70 && l > 50 && chroma > 0.20) {
       return 'jewel'
     }
 
     // Nature tones (природные)
-    if (['green', 'blue', 'springgreen', 'cyan'].includes(baseFamily) &&
+    if (['green', 'blue', 'springgreen', 'cyan'].includes(hslBaseFamily) &&
       s > 30 && s < 80 && l > 30 && l < 90) {
       return 'nature'
     }
 
     // Food tones (пищевые)
-    if (['red', 'orange', 'yellow', 'green', 'brown'].includes(baseFamily) &&
+    if (['red', 'orange', 'yellow', 'green', 'brown'].includes(hslBaseFamily) &&
       s > 50 && l > 50) {
       return 'food'
     }
 
     // Финальные маппинги
-    if (baseFamily === 'chartreuse') return 'lime'
-    if (baseFamily === 'cyan' || baseFamily === 'springgreen') return 'teal'
-    if (baseFamily === 'violet') return 'purple'
+    if (hslBaseFamily === 'chartreuse') return 'lime'
+    if (hslBaseFamily === 'cyan' || hslBaseFamily === 'springgreen') return 'teal'
+    if (hslBaseFamily === 'violet') return 'purple'
 
-    return baseFamily
+    return hslBaseFamily
   }
 
-  static fixFamily(color: ColorData): string {
-    const { hsl, family: originalFamily } = color
-    const { h: hue, s: saturation, l: lightness } = hsl
-
-    // Если family уже корректное - оставляем
-    if (originalFamily && !['lime', 'unknown', 'null'].includes(originalFamily.toLowerCase())) {
-      return originalFamily
-    }
-
-    const isGray = saturation < 8
-    const isLowSaturation = saturation < 20
-    const isMediumSaturation = saturation < 40
-    const isHighSaturation = saturation >= 60
-    const isLowLightness = lightness < 40
-    const isMediumLightness = lightness < 65
-    const isHighLightness = lightness >= 80
-    const isDark = lightness < 30
-    const isPastel = isMediumSaturation && isHighLightness
-    const isMuted = isLowSaturation || (isMediumSaturation && isMediumLightness)
-    const isVivid = isHighSaturation && !isLowLightness
-
-    // Hue-based классификация (0-360°)
-    if (isGray) return 'gray'
-
-    if (hue >= 0 && hue < 15) return isVivid ? 'red' : 'coral'
-    if (hue >= 15 && hue < 30) return isMuted ? 'brown' : 'red'
-
-    if (hue >= 30 && hue < 45) return isMuted ? 'brown' : 'yellow'
-    if (hue >= 45 && hue < 60) return isMuted ? 'olive' : 'yellow'
-
-    if (hue >= 60 && hue < 90) return isPastel ? 'mint' : 'lime'
-    if (hue >= 90 && hue < 135) return isPastel ? 'sage' : 'green'
-
-    if (hue >= 135 && hue < 165) return isPastel ? 'teal' : 'teal'
-    if (hue >= 165 && hue < 195) return isPastel ? 'aqua' : 'cyan'
-
-    if (hue >= 195 && hue < 225) return isPastel ? 'sky' : 'blue'
-    if (hue >= 225 && hue < 255) return isPastel ? 'lavender' : 'metallic'
-
-    if (hue >= 255 && hue < 285) return isPastel ? 'lilac' : 'purple'
-    if (hue >= 285 && hue < 315) return isPastel ? 'pink' : 'magenta'
-    if (hue >= 315 && hue < 360) return isPastel ? 'peach' : 'orange'
-
-    // Fallback - все переменные используются
-    if (isDark) return 'charcoal'
-    if (isPastel) return 'pastel'
-    if (isMuted) return 'neutral'
-    if (isVivid) return 'vivid'
-    if (isHighSaturation) return 'metallic'
-    if (isLowLightness) return 'dark'
-
-    return 'neutral'
-  }
+  // static fixFamily(color: ColorData): string {
+  //   const { hsl, family: originalFamily } = color
+  //   const { s: saturation, l: lightness } = hsl
+  //
+  //   // 1. Доверенные семейства НЕ меняем
+  //   const trustedFamilies = ['gray', 'black', 'white', 'brown', 'olive']
+  //   if (originalFamily && trustedFamilies.includes(originalFamily.toLowerCase())) {
+  //     return originalFamily
+  //   }
+  //
+  //   // 2. БАЗОВАЯ КЛАССИФИКАЦИЯ = getColorFamily (OKLab)
+  //   const oklabFamily = ColorMetrics.getColorFamily(hsl)
+  //
+  //   // 3. HSL ДЕСКРИПТОРЫ
+  //   const light = ColorMetrics.getLightness(hsl)
+  //   const sat = ColorMetrics.getSaturation(hsl)
+  //
+  //   // 4. OKLab хрома для точности (исправлено!)
+  //   const rgb = ColorMetrics.hexToRgb(color.hex)
+  //   const [_, a, bOklab] = ColorMetrics.rgbToOklab(rgb)
+  //   const chroma = Math.sqrt(a * a + bOklab * bOklab)
+  //
+  //   // 5. ИЕРАРХИЯ КЛАССИФИКАЦИИ
+  //
+  //   // GRAY / ACHROMATIC
+  //   if (sat === 'achromatic') {
+  //     if (light === 'very-dark') return 'black'
+  //     if (light === 'very-light') return 'white'
+  //     return 'gray'
+  //   }
+  //
+  //   // NEON (высокая хрома + средняя яркость)
+  //   if (chroma > 0.20 && saturation > 80 && lightness > 30 && lightness < 75) {
+  //     return `${oklabFamily}-neon`
+  //   }
+  //
+  //   // PASTEL (низкая насыщенность + высокая яркость)
+  //   if (sat === 'muted' || sat === 'soft') {
+  //     return `${oklabFamily}-pastel`
+  //   }
+  //
+  //   // DEEP / DARK
+  //   if (light === 'very-dark' || light === 'dark') {
+  //     return `${oklabFamily}-deep`
+  //   }
+  //
+  //   // BRIGHT / VIVID
+  //   if (light === 'very-light' && saturation > 60) {
+  //     return `${oklabFamily}-bright`
+  //   }
+  //
+  //   // MUTED / SOFT
+  //   if (sat === 'muted' || chroma < 0.08) {
+  //     return `${oklabFamily}-muted`
+  //   }
+  //
+  //   // JEWEL / VIVID (высокая насыщенность)
+  //   if (sat === 'vivid' || sat === 'saturated') {
+  //     return `${oklabFamily}-vivid`
+  //   }
+  //
+  //   // ОСНОВНОЕ семейство от OKLab
+  //   return oklabFamily
+  // }
 
   static fixFamilies(colors: ColorData[]): ColorData[] {
     return colors.map(color => ({
       ...color,
-      family: ColorMetrics.fixFamily(color)
+      family: ColorMetrics.getColorFamily(color.hsl)
     }))
   }
 

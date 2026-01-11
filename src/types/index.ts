@@ -236,6 +236,20 @@ export interface NameNormalizeStats {
   repeatedWordsRemoved: number;
 }
 
+export interface PriorityMergeStats {
+  originalPrimary: number
+  originalSecondary: number
+  totalUnique: number
+  skippedFromSecondary: number
+  skipRate: string
+  deltaEThreshold: number
+}
+
+export interface PriorityMergeResult {
+  data: ColorData[]
+  stats: PriorityMergeStats
+}
+
 export interface RecalcStats {
   total: number;
   recalculated: {
