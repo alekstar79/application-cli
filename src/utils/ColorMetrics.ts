@@ -138,7 +138,7 @@ export class ColorMetrics {
     h = (h % 360 + 360) % 360
 
     // 1. Быстрый фильтр achromatic
-    if (s < 8) {  // 8% вместо 0.08
+    if (s < 8) {  // 8%
       if (l < 15) return 'black'
       if (l > 92) return 'white'
       return 'gray'

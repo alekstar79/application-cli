@@ -12,7 +12,7 @@ export const saveDataHook: HookHandler = async (
     return
   }
 
-  // 1. ИЗ АРГУМЕНТОВ (MergeCommand: <output> <input1> <input2>)
+  // // 1. ИЗ АРГУМЕНТОВ (MergeCommand: <output> <input1> <input2>)
   // const schema = command.config.schema
   // if (schema?.args?.[0]?.type === 'output' && args[0]) {
   //   const outputPath = args[0]

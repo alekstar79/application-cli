@@ -1,15 +1,11 @@
-import { ColorData, CommandContext, DeduplicateResult, DeduplicateStats, MergeResult } from '@/types'
+import { ColorData, CommandContext, DeduplicateResult, MergeDeduplicateResult, MergeResult } from '@/types'
 
 import { Application } from '../core/Application'
 import { Command } from '../core/Command'
 import { Logger } from '../utils/Logger'
 
 import { DeduplicateCommand } from './DeduplicateCommand'
-
-interface MergeDeduplicateResult {
-  data: ColorData[]
-  stats: DeduplicateStats[]
-}
+import { CapitalizeCommand } from './CapitalizeCommand'
 
 export class MergeCommand extends Command {
   constructor() {
@@ -31,6 +27,7 @@ export class MergeCommand extends Command {
     )
 
     this.option('-f, --format <format>', 'Формат (json|ts)', 'ts')
+      .option('--capitalize', 'Принудительная капитализация (по умолчанию)')
       .option('--dedupe', 'Принудительная дедупликация (по умолчанию)')
       .validate(({ args }) => !args[0]
         ? '❌ Укажите путь для сохранения: merge <output> <dataset1> <dataset2> ...'
@@ -43,15 +40,20 @@ export class MergeCommand extends Command {
     _metadata: Record<string, any>,
     { app, options, logger }: CommandContext
   ): Promise<MergeResult> {
+    const capitalize = options.capitalize !== false
     const dedupe = options.dedupe !== false
 
     logger.info(`🔗 Мерж ${Object.keys(datasets).length} датасетов`)
 
     const allColors = Object.values(datasets).flat()
 
-    const result: MergeDeduplicateResult = dedupe
+    const result = dedupe
       ? this.deduplicateAll(allColors, app, logger) as unknown as MergeDeduplicateResult
       : { data: allColors, stats: [] }
+
+    result.data = capitalize
+      ? this.capitalizeNames(result.data, app, logger)
+      : result.data
 
     logger.success(`✅ Мерж завершен: ${result.data.length} уникальных цветов`)
     this.printMergeStats(allColors.length, result, logger)
@@ -63,7 +65,11 @@ export class MergeCommand extends Command {
     }
   }
 
-  private deduplicateAll(colors: ColorData[], app: Application, logger: Logger): DeduplicateResult {
+  private deduplicateAll(
+    colors: ColorData[],
+    app: Application,
+    logger: Logger
+  ): DeduplicateResult {
     logger.info('🔬 Дедупликация HEX+NAME...')
 
     const deduplicateCommand = app.commands.get('deduplicate') as DeduplicateCommand
@@ -72,6 +78,21 @@ export class MergeCommand extends Command {
     }
 
     return deduplicateCommand.deduplicate(colors)
+  }
+
+  private capitalizeNames(
+    colors: ColorData[],
+    app: Application,
+    logger: Logger
+  ): ColorData[] {
+    logger.info('🔬 Capitalize Names...')
+
+    const capitalizeCommand = app.commands.get('capitalize') as CapitalizeCommand
+    if (!capitalizeCommand?.processColors) {
+      throw new Error('❌ Команда "capitalize" не найдена или метод processColors отсутствует')
+    }
+
+    return capitalizeCommand.processColors(colors).data
   }
 
   printMergeStats(inputTotal: number, result: any, logger: any) {
@@ -83,6 +104,7 @@ export class MergeCommand extends Command {
 
     if (result.stats?.length > 0) {
       logger.info('\n🔍 ТОП-5 ДУБЛЕЙ:')
+
       result.stats.slice(0, 5).forEach((dup: any, i: number) => {
         logger.info(`  ${i+1}. ${dup.hex || dup.names?.[0]} → "${dup.selected}" (${dup.reason})`)
       })

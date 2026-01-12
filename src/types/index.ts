@@ -143,9 +143,13 @@ export interface DeduplicateStats {
 
 export interface DeduplicateResult {
   data: ColorData[];
-  colors?: ColorData[];
   stats: DeduplicateStats;
   duplicates: DuplicateGroup[];
+}
+
+export interface MergeDeduplicateResult {
+  stats: DeduplicateStats[]
+  data: ColorData[]
 }
 
 interface DuplicatesStats {
@@ -188,7 +192,6 @@ export interface AnalyzeResult {
 
 export interface MergeResult {
   data: ColorData[];
-  colors?: ColorData[];
   stats: DeduplicateStats[] | never[];
   inputCount: number;
 }

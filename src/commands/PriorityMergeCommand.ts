@@ -80,17 +80,23 @@ export class PriorityMergeCommand extends Command {
     // 1. Точные совпадения HEX
     const exactMatches = secondary.filter(c => primaryMap.has(c.hex)).map(c => c.hex)
 
-    // 2. Близкие по DeltaE (используем rgb из ColorData)
+    // 2. Близкие по DeltaE: ищем минимальный DeltaE
     const closeMatches: string[] = []
     for (const secColor of secondary) {
       if (exactMatches.includes(secColor.hex)) continue
 
+      let minDeltaE = Infinity
       for (const primColor of primary) {
         const deltaE = this.calculateDeltaE(secColor.rgb, primColor.rgb)
-        if (deltaE < deltaEThreshold) {
-          closeMatches.push(secColor.hex)
-          break
-        }
+        minDeltaE = Math.min(minDeltaE, deltaE)
+
+        // ОПТИМИЗАЦИЯ: если нашли ОЧЕНЬ близкий, можно выходить
+        if (minDeltaE < 0.5) break
+      }
+
+      // Только если минимальный DeltaE < threshold
+      if (minDeltaE < deltaEThreshold) {
+        closeMatches.push(secColor.hex)
       }
     }
 
@@ -107,7 +113,7 @@ export class PriorityMergeCommand extends Command {
       originalSecondary: secondary.length,
       totalUnique: merged.length,
       skippedFromSecondary: skippedHexes.size,
-      skipRate: ((skippedHexes.size / secondary.length * 100).toFixed(1)),
+      skipRate: (skippedHexes.size / secondary.length * 100).toFixed(1),
       deltaEThreshold
     }
 
@@ -116,7 +122,6 @@ export class PriorityMergeCommand extends Command {
 
   /** Простая DeltaE реализация (CIE76) используя rgb из ColorData */
   private calculateDeltaE(rgb1: ColorData['rgb'], rgb2: ColorData['rgb']): number {
-    // Конвертируем [0-255] в Lab приблизительно через XYZ
     const lab1 = this.rgbToLab(rgb1)
     const lab2 = this.rgbToLab(rgb2)
 
@@ -129,33 +134,43 @@ export class PriorityMergeCommand extends Command {
   }
 
   private rgbToLab(rgb: ColorData['rgb']): [number, number, number] {
-    // Приблизительная конверсия RGB → XYZ → Lab
-    // Нормализуем 0-255 → 0-1
-    const [r, g, b] = rgb.map(c => c / 255)
+    // гарантируем, что rgb в [0-1]
+    let [r, g, b] = rgb as [number, number, number]
 
-    // sRGB → XYZ (упрощённая матрица D65)
+    // Нормализуем если нужно
+    if (r > 1 || g > 1 || b > 1) {
+      r = r / 255
+      g = g / 255
+      b = b / 255
+    }
+
+    // sRGB → XYZ (Linear RGB)
     const r_ = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92
     const g_ = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92
     const b_ = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92
 
+    // Linear RGB → XYZ (D65 illuminant)
     const x = r_ * 0.4124 + g_ * 0.3576 + b_ * 0.1805
     const y = r_ * 0.2126 + g_ * 0.7152 + b_ * 0.0722
     const z = r_ * 0.0193 + g_ * 0.1192 + b_ * 0.9505
 
     // XYZ → Lab
-    const x_ = x / 0.95047
-    const y_ = y
-    const z_ = z / 1.08883
+    const x_ = x / 0.95047  // D65
+    const y_ = y            // D65
+    const z_ = z / 1.08883  // D65
 
-    const fx = x_ > 0.008856 ? Math.pow(x_, 1 / 3) : (x_ * 903.3 + 16) / 116
-    const fy = y_ > 0.008856 ? Math.pow(y_, 1 / 3) : (y_ * 903.3 + 16) / 116
-    const fz = z_ > 0.008856 ? Math.pow(z_, 1 / 3) : (z_ * 903.3 + 16) / 116
+    const epsilon = 0.008856
+    const kappa = 903.3
 
-    return [
-      116 * fy - 16,
-      500 * (fx - fy),
-      200 * (fy - fz)
-    ]
+    const fx = x_ > epsilon ? Math.cbrt(x_) : (kappa * x_ + 16) / 116
+    const fy = y_ > epsilon ? Math.cbrt(y_) : (kappa * y_ + 16) / 116
+    const fz = z_ > epsilon ? Math.cbrt(z_) : (kappa * z_ + 16) / 116
+
+    const L = 116 * fy - 16
+    const a = 500 * (fx - fy)
+    const bLab = 200 * (fy - fz)
+
+    return [L, a, bLab]
   }
 
   printStats(stats: PriorityMergeStats, logger: any) {
