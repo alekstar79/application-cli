@@ -229,71 +229,6 @@ export class ColorMetrics {
     return hslBaseFamily
   }
 
-  // static fixFamily(color: ColorData): string {
-  //   const { hsl, family: originalFamily } = color
-  //   const { s: saturation, l: lightness } = hsl
-  //
-  //   // 1. Доверенные семейства НЕ меняем
-  //   const trustedFamilies = ['gray', 'black', 'white', 'brown', 'olive']
-  //   if (originalFamily && trustedFamilies.includes(originalFamily.toLowerCase())) {
-  //     return originalFamily
-  //   }
-  //
-  //   // 2. БАЗОВАЯ КЛАССИФИКАЦИЯ = getColorFamily (OKLab)
-  //   const oklabFamily = ColorMetrics.getColorFamily(hsl)
-  //
-  //   // 3. HSL ДЕСКРИПТОРЫ
-  //   const light = ColorMetrics.getLightness(hsl)
-  //   const sat = ColorMetrics.getSaturation(hsl)
-  //
-  //   // 4. OKLab хрома для точности (исправлено!)
-  //   const rgb = ColorMetrics.hexToRgb(color.hex)
-  //   const [_, a, bOklab] = ColorMetrics.rgbToOklab(rgb)
-  //   const chroma = Math.sqrt(a * a + bOklab * bOklab)
-  //
-  //   // 5. ИЕРАРХИЯ КЛАССИФИКАЦИИ
-  //
-  //   // GRAY / ACHROMATIC
-  //   if (sat === 'achromatic') {
-  //     if (light === 'very-dark') return 'black'
-  //     if (light === 'very-light') return 'white'
-  //     return 'gray'
-  //   }
-  //
-  //   // NEON (высокая хрома + средняя яркость)
-  //   if (chroma > 0.20 && saturation > 80 && lightness > 30 && lightness < 75) {
-  //     return `${oklabFamily}-neon`
-  //   }
-  //
-  //   // PASTEL (низкая насыщенность + высокая яркость)
-  //   if (sat === 'muted' || sat === 'soft') {
-  //     return `${oklabFamily}-pastel`
-  //   }
-  //
-  //   // DEEP / DARK
-  //   if (light === 'very-dark' || light === 'dark') {
-  //     return `${oklabFamily}-deep`
-  //   }
-  //
-  //   // BRIGHT / VIVID
-  //   if (light === 'very-light' && saturation > 60) {
-  //     return `${oklabFamily}-bright`
-  //   }
-  //
-  //   // MUTED / SOFT
-  //   if (sat === 'muted' || chroma < 0.08) {
-  //     return `${oklabFamily}-muted`
-  //   }
-  //
-  //   // JEWEL / VIVID (высокая насыщенность)
-  //   if (sat === 'vivid' || sat === 'saturated') {
-  //     return `${oklabFamily}-vivid`
-  //   }
-  //
-  //   // ОСНОВНОЕ семейство от OKLab
-  //   return oklabFamily
-  // }
-
   static fixFamilies(colors: ColorData[]): ColorData[] {
     return colors.map(color => ({
       ...color,
@@ -301,30 +236,39 @@ export class ColorMetrics {
     }))
   }
 
-  private static hslToHex({ h, s, l }: { h: number; s: number; l: number }): string {
-    const ss = s / 100  // 0-1
-    const ll = l / 100  // 0-1
+  static hslToHex({ h, s, l }: { h: number; s: number; l: number }): string {
+    // Нормализуем вход [0-1]
+    const hh = h % 360
+    const ss = Math.max(0, Math.min(1, s / 100))
+    const ll = Math.max(0, Math.min(1, l / 100))
+
+    if (ss === 0) {
+      const gray = Math.round(ll * 255)
+      return `#${gray.toString(16).padStart(2,'0')}`.repeat(2)
+    }
+
     const c = (1 - Math.abs(2 * ll - 1)) * ss
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+    const x = c * (1 - Math.abs((hh / 60) % 2 - 1))
     const m = ll - c / 2
+    const hhPrime = hh / 60
 
     let r1 = 0, g1 = 0, b1 = 0
 
-    if (h < 60) { r1 = c; g1 = x }
-    else if (h < 120) { r1 = x; g1 = c }
-    else if (h < 180) { g1 = c; b1 = x }
-    else if (h < 240) { g1 = x; b1 = c }
-    else if (h < 300) { r1 = x; b1 = c }
-    else { r1 = c; b1 = x }
+    if (hhPrime < 1)       { r1 = c; g1 = x; }
+    else if (hhPrime < 2)  { r1 = x; g1 = c; }
+    else if (hhPrime < 3)  { g1 = c; b1 = x; }
+    else if (hhPrime < 4)  { g1 = x; b1 = c; }
+    else if (hhPrime < 5)  { r1 = x; b1 = c; }
+    else                   { r1 = c; b1 = x; }
 
-    const rHex = Math.round((r1 + m) * 255).toString(16).padStart(2, '0')
-    const gHex = Math.round((g1 + m) * 255).toString(16).padStart(2, '0')
-    const bHex = Math.round((b1 + m) * 255).toString(16).padStart(2, '0')
+    const r = Math.max(0, Math.round((r1 + m) * 255))
+    const g = Math.max(0, Math.round((g1 + m) * 255))
+    const b = Math.max(0, Math.round((b1 + m) * 255))
 
-    return `#${rHex}${gHex}${bHex}`
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`
   }
 
-  private static rgbToOklab(rgb: Tuple<number, 3>): [number, number, number] {
+  static rgbToOklab(rgb: Tuple<number, 3>): [number, number, number] {
     const [rLin, gLin, bLin] = rgb.map(c => {
       const c_ = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
       return c_ * 100

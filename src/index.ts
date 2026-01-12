@@ -12,6 +12,7 @@ import { AnalyzeCommand } from './commands/AnalyzeCommand'
 import { CapitalizeCommand } from './commands/CapitalizeCommand'
 import { CopyCommand } from './commands/CopyCommand'
 import { DeduplicateCommand } from './commands/DeduplicateCommand'
+import { GenerateCommand } from './commands/GenerateCommand'
 import { MergeCommand } from './commands/MergeCommand'
 import { NormalizeCommand } from './commands/NormalizeCommand'
 import { NormalizeNameCommand } from './commands/NormalizeNameCommand'
@@ -36,6 +37,7 @@ app.registerCommand(new AnalyzeCommand())
 app.registerCommand(new CapitalizeCommand())
 app.registerCommand(new CopyCommand())
 app.registerCommand(new DeduplicateCommand())
+app.registerCommand(new GenerateCommand())
 app.registerCommand(new MergeCommand())
 app.registerCommand(new NormalizeCommand())
 app.registerCommand(new NormalizeNameCommand())

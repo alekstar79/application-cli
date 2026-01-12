@@ -27,7 +27,7 @@ export interface ColorData {
   hueRange: Tuple<number, 2>;
   rgb: Tuple<number, 3>;
   hsl: { h: number; s: number; l: number };
-  originalName: string;
+  originalName?: string;
   [key: string]: any;
 }
 
@@ -158,6 +158,17 @@ interface DuplicatesStats {
   exactDuplicates: number;
   uniqueHex: number;
   uniqueNames: number;
+}
+
+export interface GenerateStats {
+  total: number;
+  generated: number;
+  errors: number;
+}
+
+export interface GenerateResult {
+  data: ColorData[];
+  stats: GenerateStats;
 }
 
 export interface TopStats {
