@@ -47,7 +47,7 @@ export class SortCommand extends Command {
     { args, options, logger }: CommandContext
   ): Promise<SortResult> {
     const colors = datasets[args[0]]
-    const sortBy = (options.by || 'hue') as 'name' | 'hex' | 'hue'
+    const sortBy = (options.by || 'hex') as 'name' | 'hex' | 'hue'
     const reverse = options.reverse || options.r
 
     logger.info(`🔤 Сортировка по "${sortBy}" ${reverse ? '(обратно)' : ''}...`)

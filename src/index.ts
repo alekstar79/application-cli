@@ -12,12 +12,13 @@ import { AnalyzeCommand } from './commands/AnalyzeCommand'
 import { CapitalizeCommand } from './commands/CapitalizeCommand'
 import { CopyCommand } from './commands/CopyCommand'
 import { DeduplicateCommand } from './commands/DeduplicateCommand'
-import { GenerateCommand } from './commands/GenerateCommand'
+import { HueGenerateCommand } from './commands/HueGenerateCommand'
 import { MergeCommand } from './commands/MergeCommand'
 import { NormalizeCommand } from './commands/NormalizeCommand'
 import { NormalizeNameCommand } from './commands/NormalizeNameCommand'
-import { PriorityMergeCommand } from '@/commands/PriorityMergeCommand.ts'
+import { PriorityMergeCommand } from './commands/PriorityMergeCommand'
 import { RecalcCommand } from './commands/RecalcCommand'
+import { SmartGenerateCommand } from './commands/SmartGenerateCommand'
 import { SortCommand } from './commands/SortCommand'
 
 const app = new Application('ColorDatasetCli', '1.0.0')
@@ -37,12 +38,13 @@ app.registerCommand(new AnalyzeCommand())
 app.registerCommand(new CapitalizeCommand())
 app.registerCommand(new CopyCommand())
 app.registerCommand(new DeduplicateCommand())
-app.registerCommand(new GenerateCommand())
+app.registerCommand(new HueGenerateCommand())
 app.registerCommand(new MergeCommand())
 app.registerCommand(new NormalizeCommand())
 app.registerCommand(new NormalizeNameCommand())
 app.registerCommand(new PriorityMergeCommand())
 app.registerCommand(new RecalcCommand())
+app.registerCommand(new SmartGenerateCommand())
 app.registerCommand(new SortCommand())
 
 await app.run()

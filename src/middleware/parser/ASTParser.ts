@@ -100,7 +100,7 @@ export class ASTParser {
         ...metrics
       }
     }).filter(
-      item => item.hex && item.name
+      item => item.hex // && item.name
     )
   }
 

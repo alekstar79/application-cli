@@ -127,6 +127,16 @@ export interface DatasetStats {
   };
 }
 
+export interface DistributionPhase {
+  name: string
+  targetFamilies: string[]
+  hRanges: number[][]
+  sRange: [number, number]
+  lRange: [number, number]
+  step: number
+  ratio: number
+}
+
 export interface DuplicateGroup {
   hex: string;
   names: string[];
@@ -163,6 +173,9 @@ interface DuplicatesStats {
 export interface GenerateStats {
   total: number;
   generated: number;
+  families?: number;
+  coverage?: number;
+  quality?: number;
   errors: number;
 }
 

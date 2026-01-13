@@ -70,6 +70,8 @@ export class SemanticDeduplicator {
 
     // ШАГ 2: Группировка победителей по NAME (приоритет 2)
     for (const winner of hexWinners) {
+      if (winner.name === '') continue
+
       const name = winner.name.toLowerCase()
 
       if (!nameGroups.has(name)) {
@@ -84,6 +86,8 @@ export class SemanticDeduplicator {
         progress.update()
       }
     }
+
+    if (!nameGroups.size) return { colors: hexWinners, stats: hexDuplicates }
 
     // Финальный результат: победители по NAME
     const finalResult: ColorData[] = []
@@ -119,7 +123,9 @@ export class SemanticDeduplicator {
       color
     }))
 
-    scores.sort((a, b) => b.score - a.score)
+    scores.sort((a, b) => {
+      return b.score - a.score
+    })
 
     return scores[0].color
   }

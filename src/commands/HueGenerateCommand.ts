@@ -7,12 +7,12 @@ import { Family } from '../utils/words'
 
 import { Command } from '../core/Command'
 
-export class GenerateCommand extends Command {
+export class HueGenerateCommand extends Command {
   families: Set<Family> = new Set()
 
   constructor() {
     super(
-      'generate',
+      'hue-generate',
       '<output> <count>',
       'Генерация равномерного датасета цветов по цветовому спектру',
       (_args: string[], _options: Record<string, any>, _flags: string[], ctx: CommandContext) =>
@@ -53,7 +53,7 @@ export class GenerateCommand extends Command {
     logger.info(`🎚️  S: ${saturation}±${satSpread}, L: ${lightness}±${lightSpread}`)
     logger.info(`🔄 Hue шаг: ${hueSteps}°`)
 
-    const result = await this.generateDataset(count, {
+    const result = this.generateDataset(count, {
       saturation,
       lightness,
       hueSteps,
@@ -68,7 +68,7 @@ export class GenerateCommand extends Command {
     return result
   }
 
-  private async generateDataset(
+  generateDataset(
     count: number,
     params: {
       saturation: number
@@ -78,7 +78,7 @@ export class GenerateCommand extends Command {
       lightSpread: number
     },
     logger: Logger
-  ): Promise<GenerateResult> {
+  ): GenerateResult {
     const { saturation, lightness, satSpread, lightSpread } = params
 
     const progress = new ProgressBar({ total: count, width: 40 })
