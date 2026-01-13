@@ -23,7 +23,7 @@ export const loadDataHook: HookHandler = async (
 
     // Если первый аргумент не dataset, ищем остальные
     if (schema.args[0]?.type !== 'path' && args.length > 1) {
-      datasetPaths.push(...args.slice(1))
+      datasetPaths.push(...args.slice(1).filter(a => !/^\d+$/.test(a)))
     }
   }
 

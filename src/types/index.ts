@@ -194,6 +194,7 @@ export interface AnalyzeResult {
   total: number;
   valid: number;
   invalid: number;
+  families: number;
   duplicates: DuplicatesStats;
   stats: DatasetStats;
   top: TopStats;

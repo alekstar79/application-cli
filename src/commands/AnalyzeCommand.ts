@@ -19,8 +19,7 @@ export class AnalyzeCommand extends Command {
           args: [
             { name: 'dataset', required: true, type: 'path'   },
             { name: 'output', required: false, type: 'output' }
-          ],
-          options: {}
+          ]
         }
       }
     )
@@ -74,6 +73,7 @@ export class AnalyzeCommand extends Command {
     const hexSet = new Set<string>()
     const nameSet = new Set<string>()
     const exactSet = new Set<string>()
+    const familySet = new Set<string>()
     let hexDuplicates = 0
     let nameDuplicates = 0
     let exactDuplicates = 0
@@ -85,8 +85,9 @@ export class AnalyzeCommand extends Command {
       progress.update(1)
 
       // Статистика дублей
-      const hexKey = color.hex.toLowerCase()
-      const nameKey = color.name.toLowerCase()
+      const hexKey = color.hex?.toLowerCase()
+      const nameKey = color.name?.toLowerCase()
+      const familyKey = color.family?.toLowerCase()
       const exactKey = `${hexKey}|${nameKey}`
 
       if (hexSet.has(hexKey)) hexDuplicates++
@@ -97,6 +98,10 @@ export class AnalyzeCommand extends Command {
 
       if (exactSet.has(exactKey)) exactDuplicates++
       else exactSet.add(exactKey)
+
+      if (familyKey) {
+        familySet.add(familyKey)
+      }
 
       // Валидация HEX
       const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color.hex)
@@ -162,6 +167,7 @@ export class AnalyzeCommand extends Command {
       total: data.length,
       valid: validCount,
       invalid: data.length - validCount,
+      families: familySet.size,
       duplicates: {
         hexDuplicates,
         nameDuplicates,
@@ -178,7 +184,7 @@ export class AnalyzeCommand extends Command {
 
   printReport(dataset: string, result: AnalyzeResult, logger: any) {
     logger.success(`📊 АНАЛИЗ ДАТАСЕТА ${dataset}`)
-    logger.info(`Всего цветов: ${result.total}`)
+    logger.info(`Всего цветов: ${result.total} из ${result.families} семейств`)
     logger.info(`✅ Валидных: ${result.valid} (${((result.valid/result.total)*100).toFixed(1)}%)`)
     logger.info(`❌ Невалидных: ${result.invalid}`)
 

@@ -265,7 +265,9 @@ export class ColorMetrics {
     const g = Math.max(0, Math.round((g1 + m) * 255))
     const b = Math.max(0, Math.round((b1 + m) * 255))
 
-    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`
+    return `#${[r, g, b]
+      .map(ch => ch.toString(16).padStart(2,'0'))
+      .join('')}`
   }
 
   static rgbToOklab(rgb: Tuple<number, 3>): [number, number, number] {

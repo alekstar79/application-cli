@@ -3,10 +3,13 @@ import { ColorData, CommandContext, GenerateResult, GenerateStats, Tuple } from 
 import { ColorMetrics } from '../utils/ColorMetrics'
 import { ProgressBar } from '../utils/ProgressBar'
 import { Logger } from '../utils/Logger'
+import { Family } from '../utils/words'
 
 import { Command } from '../core/Command'
 
 export class GenerateCommand extends Command {
+  families: Set<Family> = new Set()
+
   constructor() {
     super(
       'generate',
@@ -60,7 +63,7 @@ export class GenerateCommand extends Command {
 
     this.printStats(result.stats, logger)
 
-    logger.success(`✅ Сгенерировано: ${result.data.length} цветов`)
+    logger.success(`✅ Сгенерировано: ${result.data.length} цветов из ${this.families.size} семейств`)
 
     return result
   }
@@ -122,6 +125,7 @@ export class GenerateCommand extends Command {
           }
         }
 
+        this.families.add(family)
         colors.push(color)
         stats.generated++
 
