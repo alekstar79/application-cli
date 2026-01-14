@@ -1,8 +1,9 @@
 import { AnalyzeResult, ColorData, CommandContext, DatasetStats, Distributions, Metadata, Patterns, TopStats } from '@/types'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Command } from '../core/Command'
 
-import { buildPath } from '../utils/paths'
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Command } from '@/core/Command'
+
+import { buildPath } from '@/utils/paths'
 import { writeFile } from 'fs/promises'
 
 export class AnalyzeCommand extends Command {

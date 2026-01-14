@@ -1,8 +1,8 @@
 import { CommandContext, ColorData, DeduplicateResult, DeduplicateStats } from '@/types'
 
-import { SemanticDeduplicator } from '../utils/deduplicator/SemanticDeduplicator'
-import { Command } from '../core/Command'
-import { Logger } from '../utils/Logger'
+import { SemanticDeduplicator } from '@/utils/deduplicator/SemanticDeduplicator'
+import { Command } from '@/core/Command'
+import { Logger } from '@/utils/Logger'
 
 import { writeFile } from 'fs/promises'
 

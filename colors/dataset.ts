@@ -1,6 +1,6 @@
 /**
- * Generated Color Dataset - 7573 цветов
- * Сгенерировано: 12.01.2026, 19:24:15
+ * Dataset - 7573 colors
+ * Generated: 12.01.2026, 19:24:15
  */
 
 export default [

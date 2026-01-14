@@ -55,7 +55,7 @@ export class DatasetPlugin {
       if (format === 'json') {
         content = JSON.stringify(data, null, 2)
       } else {
-        content = `/**\n * Generated Color Dataset - ${data.length} цветов\n * Сгенерировано: ${new Date().toLocaleString('ru-RU')}\n */\n\nexport default [\n`
+        content = `/**\n * Dataset - ${data.length} colors\n * Generated: ${new Date().toLocaleString('ru-RU')}\n */\n\nexport default [\n`
 
         data.forEach((color, index) => {
           let { hex, name, family, hueRange, rgb, hsl } = color

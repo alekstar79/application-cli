@@ -1,8 +1,8 @@
 import { ColorData, CommandContext, GenerateResult } from '@/types'
 
-import { FamilyCoverageAnalyzer } from '../utils/dataset-distribution/FamilyCoverageAnalyzer'
-import { DatasetPruner } from '../utils/dataset-distribution/DatasetPruner'
-import { Command } from '../core/Command'
+import { FamilyCoverageAnalyzer } from '@/utils/dataset-distribution/FamilyCoverageAnalyzer'
+import { DatasetPruner } from '@/utils/dataset-distribution/DatasetPruner'
+import { Command } from '@/core/Command'
 
 export class PruneCommand extends Command {
   constructor() {

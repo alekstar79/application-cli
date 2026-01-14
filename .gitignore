@@ -3,11 +3,15 @@
 /.pnp
 .pnp.js
 
-# testing
-/coverage
+# Testing
+coverage/
+.nyc_output/
+*.lcov
 
 # production
-/build
+build/
+dist/
+*.tsbuildinfo
 .DS_Store
 
 # local env files
@@ -16,7 +20,7 @@
 
 node_modules
 
-# archives
+# Archives
 *.tar.gz
 *.tar
 *.zip
@@ -36,3 +40,8 @@ npm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary files
+*.tmp
+*.log
+.cache/

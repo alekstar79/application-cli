@@ -1,11 +1,11 @@
 import { ColorData, CommandContext, GenerateResult, GenerateStats } from '@/types'
 
-import { FamilyCoverageAnalyzer } from '../utils/dataset-distribution/FamilyCoverageAnalyzer'
-import { DatasetDistribution } from '../utils/dataset-distribution/DatasetDistribution'
-import { DatasetBalancer } from '../utils/dataset-distribution/DatasetBalancer'
+import { FamilyCoverageAnalyzer } from '@/utils/dataset-distribution/FamilyCoverageAnalyzer'
+import { DatasetDistribution } from '@/utils/dataset-distribution/DatasetDistribution'
+import { DatasetBalancer } from '@/utils/dataset-distribution/DatasetBalancer'
 
-import { Command } from '../core/Command'
-import { Logger } from '../utils/Logger'
+import { Command } from '@/core/Command'
+import { Logger } from '@/utils/Logger'
 
 export class SmartGenerateCommand extends Command {
   private analyzer: FamilyCoverageAnalyzer

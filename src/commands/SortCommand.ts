@@ -1,8 +1,8 @@
 import { ColorData, CommandContext, SortResult, SortStats } from '@/types'
 
-import { Command } from '../core/Command'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Logger } from '../utils/Logger'
+import { Command } from '@/core/Command'
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Logger } from '@/utils/Logger'
 
 export class SortCommand extends Command {
   private comparisons: number = 0

@@ -1,8 +1,8 @@
 import { CommandContext, ColorData, RecalcResult, RecalcStats } from '@/types'
 
-import { ColorMetrics } from '../utils/ColorMetrics.ts'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Command } from '../core/Command'
+import { ColorMetrics } from '@/utils/ColorMetrics'
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Command } from '@/core/Command'
 
 export class RecalcCommand extends Command {
   constructor() {

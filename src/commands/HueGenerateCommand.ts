@@ -1,10 +1,9 @@
 import { ColorData, CommandContext, Family, GenerateResult, GenerateStats, Tuple } from '@/types'
 
-import { ColorMetrics } from '../utils/ColorMetrics'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Logger } from '../utils/Logger'
-
-import { Command } from '../core/Command'
+import { Command } from '@/core/Command'
+import { ColorMetrics } from '@/utils/ColorMetrics'
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Logger } from '@/utils/Logger'
 
 export class HueGenerateCommand extends Command {
   families: Set<Family> = new Set()

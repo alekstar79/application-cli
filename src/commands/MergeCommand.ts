@@ -1,8 +1,8 @@
 import { ColorData, CommandContext, DeduplicateResult, MergeDeduplicateResult, MergeResult } from '@/types'
 
-import { Application } from '../core/Application'
-import { Command } from '../core/Command'
-import { Logger } from '../utils/Logger'
+import { Application } from '@/core/Application'
+import { Command } from '@/core/Command'
+import { Logger } from '@/utils/Logger'
 
 import { DeduplicateCommand } from './DeduplicateCommand'
 import { CapitalizeCommand } from './CapitalizeCommand'

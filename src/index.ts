@@ -49,4 +49,4 @@ app.registerCommand(new RecalcCommand())
 app.registerCommand(new SmartGenerateCommand())
 app.registerCommand(new SortCommand())
 
-await app.run()
+app.run().catch()

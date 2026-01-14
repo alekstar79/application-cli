@@ -1,19 +1,75 @@
 {
   "name": "color-dataset-cli",
   "version": "1.0.0",
+  "description": "TypeScript CLI for intelligent color dataset generation, pruning, and management with spectrum preservation",
   "license": "MIT",
+  "author": "Aleksey Tarasenko <alekstar79@yandex.ru>",
+  "homepage": "https://github.com/alekstar79/application-cli",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alekstar79/application-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alekstar79/application-cli/issues"
+  },
+  "keywords": [
+    "color",
+    "dataset",
+    "cli",
+    "color-management",
+    "generation",
+    "pruning",
+    "spectrum",
+    "hsl",
+    "rgb",
+    "typescript"
+  ],
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "color-dataset": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "build": "npm run build:types && npm run build:esbuild",
+    "build:esbuild": "esbuild src/index.ts --bundle --platform=node --target=es2022 --format=esm --outfile=dist/index.js --sourcemap",
+    "build:types": "tsc --emitDeclarationOnly",
+    "start": "node dist/index.js",
+    "lint": "eslint src/**/*.ts",
+    "prepare": "npm run build",
+    "test": "node --test --loader=tsx dist/**/*.test.ts",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^25.0.6",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "esbuild": "^0.27.2",
+    "eslint": "^9.0.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }

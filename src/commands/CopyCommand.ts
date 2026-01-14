@@ -1,6 +1,6 @@
 import { ColorData, CommandContext, CopyResult, CopyStats } from '@/types'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Command } from '../core/Command'
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Command } from '@/core/Command'
 
 import { CapitalizeCommand } from './CapitalizeCommand'
 import { NormalizeNameCommand } from './NormalizeNameCommand'

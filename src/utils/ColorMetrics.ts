@@ -136,14 +136,14 @@ export class ColorMetrics {
   static getColorFamily({ h, s = 1, l = 0.5 }: { h: number; s: number; l: number }): Family {
     h = (h % 360 + 360) % 360
 
-    // 1. Быстрый фильтр achromatic
+    // 1. Achromatic fast filter
     if (s < 8) {  // 8%
       if (l < 15) return 'black'
       if (l > 92) return 'white'
       return 'gray'
     }
 
-    // 2. HSL HUE напрямую для базовой классификации
+    // 2. HSL HUE directly for basic classification
     let hslBaseFamily: Family
     if (h >= 0 && h < 15) hslBaseFamily = 'red'
     else if (h < 30) hslBaseFamily = 'orange'
@@ -158,69 +158,69 @@ export class ColorMetrics {
     else if (h < 330) hslBaseFamily = 'magenta'
     else hslBaseFamily = 'rose'
 
-    // OKLab классификация (только для хромы и special cases)
+    // OKLab classification (only for chromatic and special cases)
     const rgb = this.hexToRgb(this.hslToHex({ h, s, l }))
     const [L, a, bOklab] = this.rgbToOklab(rgb)
 
-    // OKLab хрома (более точная чем HSL s)
+    // OKLab chromatic (more accurate than HSL's)
     const chroma = Math.sqrt(a * a + bOklab * bOklab)
     if (chroma < 0.045) return 'neutral'
 
-    // 3. СПЕЦИАЛИЗИРОВАННЫЕ КАТЕГОРИИ на основе HSL base
+    // 3. SPECIALIZED CATEGORIES based on HSL base
 
-    // PASTEL (низкая насыщенность + высокая яркость)
+    // PASTEL (low saturation + high brightness)
     if (s < 30 && l > 60) return 'pastel'
 
-    // NEON (Только кислотные цвета)
+    // NEON (Only acid colors)
     if (s > 90 && l > 40 && l < 65 && chroma > 0.25) {
-      // Только lime, magenta, cyan hue диапазоны
+      // Only lime, magenta, and cyan hue ranges
       if (h >= 60 && h <= 90) return 'neon'     // neon lime
       if (h >= 270 && h <= 330) return 'neon'   // neon magenta
       if (h >= 165 && h <= 210) return 'neon'   // neon cyan
     }
 
-    // Brown (коричневые) - OKLab хрома + теплые тона
+    // Brown - OKLab chromatic + warm tones
     if (chroma < 0.15 && ['orange', 'yellow', 'red'].includes(hslBaseFamily) && l < 70) {
       return 'brown'
     }
 
-    // Pink (розовые) - высокая L + средняя хрома
+    // Pink - high L + medium chromatic
     if (['red', 'rose', 'magenta'].includes(hslBaseFamily) &&
       L > 0.75 && chroma > 0.08 && chroma < 0.22) {
       return 'pink'
     }
 
-    // Metallic (металлические желтые/оранжевые)
+    // Metallic (metallic yellow/orange)
     if (['yellow', 'orange'].includes(hslBaseFamily) &&
       s > 20 && s < 70 && l > 50) {
       return 'metallic'
     }
 
-    // Skin tones (телесные)
+    // Skin (body tones)
     if (['orange', 'yellow', 'brown'].includes(hslBaseFamily) &&
       s > 20 && s < 70 && l > 40 && l < 90) {
       return 'skin'
     }
 
-    // Jewel tones (драгоценные)
+    // Jewel tones
     if (['red', 'green', 'blue', 'purple', 'magenta'].includes(hslBaseFamily) &&
       s > 70 && l > 50 && chroma > 0.20) {
       return 'jewel'
     }
 
-    // Nature tones (природные)
+    // Nature tones (natural)
     if (['green', 'blue', 'springgreen', 'cyan'].includes(hslBaseFamily) &&
       s > 30 && s < 80 && l > 30 && l < 90) {
       return 'nature'
     }
 
-    // Food tones (пищевые)
+    // Food tones
     if (['red', 'orange', 'yellow', 'green', 'brown'].includes(hslBaseFamily) &&
       s > 50 && l > 50) {
       return 'food'
     }
 
-    // Финальные маппинги
+    // Final mappings
     if (hslBaseFamily === 'chartreuse') return 'lime'
     if (hslBaseFamily === 'cyan' || hslBaseFamily === 'springgreen') return 'teal'
     if (hslBaseFamily === 'violet') return 'purple'
@@ -236,7 +236,7 @@ export class ColorMetrics {
   }
 
   static hslToHex({ h, s, l }: { h: number; s: number; l: number }): string {
-    // Нормализуем вход [0-1]
+    // Normalize [0-1]
     const hh = h % 360
     const ss = Math.max(0, Math.min(1, s / 100))
     const ll = Math.max(0, Math.min(1, l / 100))

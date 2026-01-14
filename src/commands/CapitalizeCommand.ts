@@ -1,6 +1,7 @@
 import { ColorData, CommandContext, CapitalizeResultExtended } from '@/types'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Command } from '../core/Command'
+
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Command } from '@/core/Command'
 
 export class CapitalizeCommand extends Command {
   constructor() {

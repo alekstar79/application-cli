@@ -1,5 +1,5 @@
 import { CommandContext, CommandAction, CommandConfig } from '@/types'
-import { Logger } from '../utils/Logger.ts'
+import { Logger } from '@/utils/Logger'
 
 type HookCallback = (context: any) => Promise<void>
 type ValidatorCallback = (context: any) => true | string

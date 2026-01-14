@@ -1,7 +1,7 @@
 import { CommandContext, ColorData, PriorityMergeResult, PriorityMergeStats } from '@/types'
 
-import { Command } from '../core/Command'
-import { Logger } from '../utils/Logger'
+import { Command } from '@/core/Command'
+import { Logger } from '@/utils/Logger'
 
 import { writeFile } from 'fs/promises'
 

@@ -1,6 +1,6 @@
 import { ColorData, CommandContext, NormalizeResult, NormalizeStats, Tuple } from '@/types'
-import { ProgressBar } from '../utils/ProgressBar'
-import { Command } from '../core/Command'
+import { ProgressBar } from '@/utils/ProgressBar'
+import { Command } from '@/core/Command'
 
 export class NormalizeCommand extends Command {
   constructor() {

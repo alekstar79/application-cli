@@ -1,13 +1,13 @@
 import { ColorData, CommandContext, DatasetAPI, HookHandler, MiddlewareHandler, ParsedArgs } from '@/types'
 
-import { ColorMetrics } from '../utils/ColorMetrics'
-import { PipeHandler } from '../utils/PipeHandler'
+import { ColorMetrics } from '@/utils/ColorMetrics'
+import { PipeHandler } from '@/utils/PipeHandler'
 import { Command } from './Command'
 
-import { Logger } from '../utils/Logger'
-import { Tracer } from '../utils/Tracer'
+import { Logger } from '@/utils/Logger'
+import { Tracer } from '@/utils/Tracer'
 
-import { parseArgs } from './parseArgs.ts'
+import { parseArgs } from './parseArgs'
 
 export class Application {
   name: string

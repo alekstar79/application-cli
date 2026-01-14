@@ -1,7 +1,7 @@
 import { ColorMetrics } from '../ColorMetrics'
 import { ColorData } from '@/types'
 
-import { colorKernels, colorModifiers } from '../words.ts'
+import { colorKernels, colorModifiers } from '../words'
 
 export class SemanticAnalyzer {
   private static instance: SemanticAnalyzer
