@@ -178,6 +178,15 @@ interface DuplicatesStats {
   uniqueNames: number;
 }
 
+export interface ColorQualityMetrics {
+  color: ColorData
+  uniqueness: number // 0-1: уникальность в спектре
+  saturationQuality: number // 0-1: качество по насыщенности
+  lightnessQuality: number // 0-1: качество по светлоте
+  familyRepresentativity: number // 0-1: представительность семейства
+  overallScore: number // 0-100
+}
+
 export interface GenerateStats {
   total: number;
   generated: number;
@@ -187,9 +196,17 @@ export interface GenerateStats {
   errors: number;
 }
 
+export interface PruningStats {
+  removedCount: number;
+  keptCount: number;
+  avgScoreKept: number;
+  avgScoreRemoved: number;
+}
+
 export interface GenerateResult {
   data: ColorData[];
-  stats: GenerateStats;
+  stats?: GenerateStats | PruningStats;
+  errors?: number;
 }
 
 export interface TopStats {

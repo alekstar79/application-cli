@@ -8,25 +8,25 @@ export class DatasetBalancer {
     const stats = this.analyzeFamilyDistribution(colors)
     const targetCount = colors.length
 
-    logger.info(`⚖️  Фаза 2: Балансировка семейств...`)
+    logger.info(`⚖️  Phase 2: Balancing families...`)
 
-    // Находим дисбалансы
+    // Finding imbalances
     const imbalances = this.findImbalances(stats, tolerance, targetCount)
-    logger.info(`⚠️  Найдено ${imbalances.length} дисбалансов (±${tolerance}%)`)
+    logger.info(`⚠️ Found ${imbalances.length} imbalances (±${tolerance}%)`)
 
     let balanced = [...colors]
 
-    // Исправляем дисбалансы
+    // Correcting imbalances
     for (const imbalance of imbalances) {
       if (imbalance.delta > 0) {
-        // Недостаток - добавляем
+        // Shortage - adding
         const added = this.generateForFamily(imbalance.family, imbalance.targetCount)
         balanced.push(...added)
         logger.info(`  🔧 ${imbalance.family}: +${added.length} (${(added.length/targetCount*100).toFixed(1)}%)`)
       }
     }
 
-    // Обрезаем до целевого количества
+    // Trim to the target amount
     return balanced.slice(0, targetCount)
   }
 

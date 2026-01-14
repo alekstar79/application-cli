@@ -64,7 +64,7 @@ export class HueGenerateCommand extends Command {
       lightSpread
     }, logger)
 
-    this.printStats(result.stats, logger)
+    this.printStats(result.stats as GenerateStats, logger)
 
     logger.success(`✅ Generated: ${result.data.length} colors from ${this.families.size} families`)
 

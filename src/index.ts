@@ -17,6 +17,7 @@ import { MergeCommand } from './commands/MergeCommand'
 import { NormalizeCommand } from './commands/NormalizeCommand'
 import { NormalizeNameCommand } from './commands/NormalizeNameCommand'
 import { PriorityMergeCommand } from './commands/PriorityMergeCommand'
+import { PruneCommand } from './commands/PruneCommand'
 import { RecalcCommand } from './commands/RecalcCommand'
 import { SmartGenerateCommand } from './commands/SmartGenerateCommand'
 import { SortCommand } from './commands/SortCommand'
@@ -43,6 +44,7 @@ app.registerCommand(new MergeCommand())
 app.registerCommand(new NormalizeCommand())
 app.registerCommand(new NormalizeNameCommand())
 app.registerCommand(new PriorityMergeCommand())
+app.registerCommand(new PruneCommand())
 app.registerCommand(new RecalcCommand())
 app.registerCommand(new SmartGenerateCommand())
 app.registerCommand(new SortCommand())
