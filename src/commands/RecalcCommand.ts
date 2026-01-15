@@ -42,7 +42,7 @@ export class RecalcCommand extends Command {
     _metadata: Record<string, any>,
     { args, options, logger, app }: CommandContext
   ): Promise<RecalcResult> {
-    logger.info('🔄 Пересчёт всех цветовых значений из HEX...')
+    logger.info('🔄 Recalculating all color values from HEX...')
 
     const colors = datasets[args[0]]
     const useDenormalize = options.denormalize || options.d
@@ -55,11 +55,11 @@ export class RecalcCommand extends Command {
     let finalData = result.data
 
     if (useDenormalize) {
-      logger.info('🔗 Денормализация...')
+      logger.info('🔗 Denormalization...')
 
       const normalizeCommand = app.commands.get('normalize') as any
       if (!normalizeCommand?.processNormalization) {
-        throw new Error('❌ Метод processNormalization не найден')
+        throw new Error('❌ The processNormalization method was not found')
       }
 
       const denormResult = normalizeCommand.processNormalization(
@@ -67,7 +67,7 @@ export class RecalcCommand extends Command {
       )
 
       finalData = denormResult.data
-      logger.success('✅ Денормализация завершена')
+      logger.success('✅ Denormalization is complete')
     }
 
     return { stats: result.stats, data: finalData }
@@ -122,11 +122,11 @@ export class RecalcCommand extends Command {
   }
 
   private printStats(stats: RecalcStats, logger: any) {
-    logger.info('📊 СТАТИСТИКА ПЕРЕСЧЁТА:')
-    logger.info(`  Всего: ${stats.total}`)
+    logger.info('📊 RECALCULATION STATISTICS:')
+    logger.info(`  Total: ${stats.total}`)
     logger.info(`  ✅ RGB: ${stats.recalculated.rgb}`)
     logger.info(`  ✅ HSL: ${stats.recalculated.hsl}`)
     logger.info(`  ✅ HueRange: ${stats.recalculated.hueRange}`)
-    logger.info(`  ❌ Ошибок: ${stats.errors}`)
+    logger.info(`  ❌ Errors: ${stats.errors}`)
   }
 }
