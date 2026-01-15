@@ -2,8 +2,6 @@
 
 > TypeScript CLI for intelligent color dataset generation, pruning, and management with spectral preservation and quality optimization.
 
-[![npm version](https://img.shields.io/npm/v/color-dataset-cli?style=flat-square)](https://www.npmjs.com/package/color-dataset-cli)
-[![npm downloads](https://img.shields.io/npm/dm/color-dataset-cli?style=flat-square)](https://www.npmjs.com/package/color-dataset-cli)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square)](https://www.typescriptlang.org)
 [![Node](https://img.shields.io/badge/Node-18%2B-green?style=flat-square)](https://nodejs.org)
@@ -47,13 +45,25 @@ npm run build
 npm start --help
 ```
 
+---
+
 ## 📖 Commands
 
-> ...  
->     
-> There should be a description of the commands here... Someday there will be  
->       
-> ...
+This CLI provides specialized commands for working with datasets:
+
+- `analyze` – analyze an existing dataset and print statistics, distributions, and potential issues.
+- `capitalize` – normalize color names to a consistent capitalized format.
+- `copy` – copy a dataset to a new file, optionally with filtering or transformation.
+- `deduplicate` – remove duplicate colors based on value and/or name matching.
+- `hue-generate` – generate colors evenly distributed by hue angle.
+- `merge` – merge multiple datasets into a single one without priority rules.
+- `normalize` – normalize color values and structure to the standard dataset format.
+- `normalize-name` – normalize and clean color names according to naming rules.
+- `priority-merge` – merge multiple datasets using explicit priority rules.
+- `prune` – reduce a dataset size by quality‑based selection (already described above).
+- `recalc` – recalculate derived fields (HSL/OKLab/etc.) for an existing dataset.
+- `smart-generate` – generation of an intelligent dataset with optimal coverage of families
+- `sort` – sort a dataset by configurable criteria (hue, lightness, name, etc.).
 
 ---
 
@@ -75,16 +85,16 @@ Each family has its own hue, saturation, and lightness ranges for accurate class
 
 ---
 
-## 🛠️ API Reference
+## 🛠️ Utility Reference
 
-### Core Classes
+### Utility Classes
 
 #### `DatasetDistribution`
 
 Generates structured color datasets.
 
 ```typescript
-import { DatasetDistribution } from 'color-dataset-cli'
+import { DatasetDistribution } from 'src/utils/dataset-distribution/DatasetDistribution'
 
 const distribution = new DatasetDistribution(10000)
 const colors = distribution.generateStructuredDataset(logger)
@@ -95,7 +105,7 @@ const colors = distribution.generateStructuredDataset(logger)
 Intelligently prunes datasets.
 
 ```typescript
-import { DatasetPruner } from 'color-dataset-cli'
+import { DatasetPruner } from 'src/utils/dataset-distribution/DatasetPruner'
 
 const pruner = new DatasetPruner()
 const { data, stats } = pruner.prune(colors, 3000, logger, {
@@ -110,7 +120,7 @@ const { data, stats } = pruner.prune(colors, 3000, logger, {
 Analyzes color distribution across spectrum.
 
 ```typescript
-import { SpectrumAnalyzer } from 'color-dataset-cli'
+import { SpectrumAnalyzer } from 'src/utils/dataset-distribution/SpectrumAnalyzer'
 
 const analyzer = new SpectrumAnalyzer()
 const coverage = analyzer.analyzeCoverage(colors)
@@ -122,7 +132,7 @@ const gaps = analyzer.getCriticalBuckets(coverage)
 Evaluates individual color quality.
 
 ```typescript
-import { QualityScorer } from 'color-dataset-cli'
+import { QualityScorer } from 'src/utils/dataset-distribution/QualityScorer'
 
 const scorer = new QualityScorer()
 const metrics = scorer.scoreColor(color, nearbyColors, familyColors, ranges)
@@ -133,47 +143,10 @@ const metrics = scorer.scoreColor(color, nearbyColors, familyColors, ranges)
 Validates dataset quality metrics.
 
 ```typescript
-import { FamilyCoverageAnalyzer } from 'color-dataset-cli'
+import { FamilyCoverageAnalyzer } from 'src//utils/dataset-distribution/FamilyCoverageAnalyzer'
 
 const validator = new FamilyCoverageAnalyzer()
 const { families, coverage, quality } = validator.validate(colors, logger)
-```
-
----
-
-## 📊 Output File Format
-
-Generated files are TypeScript modules for easy integration:
-
-```typescript
-// colors.ts
-import { ColorData } from 'color-dataset-cli'
-
-export const colors: ColorData[] = [
-  {
-    hex: "#FF6B6B",
-    name: "Red Alert",
-    family: "red",
-    hueRange: [0, 15],
-    rgb: [1, 0.42, 0.42],
-    hsl: { h: 0, s: 100, l: 71 }
-  },
-  // ... more colors
-]
-
-export const TOTAL_COLORS = 10000
-export const FAMILIES_COVERED = 32
-export const SPECTRUM_COVERAGE = 94.1
-```
-
-You can import and use in your project:
-
-```typescript
-import { colors } from './colors'
-
-colors.forEach(color => {
-  console.log(`${color.hex} - ${color.family}`)
-})
 ```
 
 ---
@@ -344,7 +317,7 @@ export class MyCommand extends Command {
 2. Register in `src/index.ts`:
 
 ```typescript
-commands.register(new MyCommand())
+app.registerCommand(new MyCommand())
 ```
 
 ---
@@ -360,13 +333,6 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 - Color science references from [W3C CSS Color Module](https://www.w3.org/TR/css-color-3/)
 - HSL color space specifications
 - Inspired by design system color management best practices
-
----
-
-## 📞 Support
-
-- 🐛 [Report Issues](https://github.com/alekstar79/application-cli/issues)
-- 📧 [Email Support](mailto:alekstar79@yandex.ru)
 
 ---
 
@@ -394,8 +360,6 @@ See [CHANGELOG.md](CHANGELOG.md) for planned features and improvements.
 ---
 
 <div align="center">
-
-**[⬆ Back to top](#color-dataset-cli)**
 
 Made by [alekstar79](https://github.com/alekstar79)
 
