@@ -7,10 +7,10 @@ import { Logger } from '@/utils/Logger'
 import { buildPath } from '@/utils/paths'
 import { writeFile } from 'fs/promises'
 
-const NAME_LENGTH_BUCKET_SIZE = 5
-const TOP_LIST_SIZE = 5
-const MOST_COMMON_WORDS_SIZE = 10
 const PROGRESS_BAR_WIDTH = 40
+const NAME_LENGTH_BUCKET_SIZE = 5
+const MOST_COMMON_WORDS_SIZE = 10
+const TOP_LIST_SIZE = 5
 
 export class AnalyzeCommand extends Command {
   constructor() {
