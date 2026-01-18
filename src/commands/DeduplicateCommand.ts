@@ -12,7 +12,7 @@ export class DeduplicateCommand extends Command {
   constructor() {
     super(
       'deduplicate',
-      '<dataset> [output]',
+      '<output> [<dataset1> <dataset2> ...]',
       'Deduplicate color dataset by HEX and name (exact match)',
       (_args: string[], _options: Record<string, any>, _flags: string[], ctx: CommandContext) =>
         this.perform(ctx.parsedDatasets!, ctx.parseMetadata!, ctx), {
@@ -20,8 +20,7 @@ export class DeduplicateCommand extends Command {
         strict: true,
         schema: {
           args: [
-            { name: 'dataset', required: true, type: 'path'   },
-            { name: 'output', required: false, type: 'output' }
+            { name: 'output', required: true, type: 'output' }
           ]
         }
       }
@@ -42,21 +41,33 @@ export class DeduplicateCommand extends Command {
   async perform(
     datasets: Record<string, ColorData[]>,
     _metadata: Record<string, any>,
-    { args, options, logger }: CommandContext
+    { options, logger }: CommandContext
   ): Promise<DeduplicateResult> {
     logger.info('🔬 Semantic dataset deduplication...')
 
-    const colors = datasets[args[0]]
-    const showReport = options.report
+    // All uploaded datasets
+    const datasetKeys = Object.keys(datasets)
+    if (datasetKeys.length === 0) {
+      throw new Error('❌ No datasets loaded')
+    }
+
+    // Main dataset (first one)
+    const colors = datasets[datasetKeys[0]]
+
+    // Priority dataset (second, if available)
+    const priorityColors = datasetKeys.length > 1 ? datasets[datasetKeys[1]] : []
 
     logger.info(`📊 Original colors: ${colors.length}`)
+    if (priorityColors.length > 0) {
+      logger.info(`🎯 Priority colors: ${priorityColors.length}`)
+    }
 
-    const result = this.deduplicate(colors)
+    const result = this.deduplicate(colors, priorityColors)
 
     logger.success(`✅ Deduplication is complete: ${result.stats.removed} deleted`)
     this.printStats(result.stats, logger)
 
-    if (showReport) {
+    if (options.report) {
       this.printDetailedReport(result, logger)
     }
     if (options.saveReport) {
@@ -66,8 +77,8 @@ export class DeduplicateCommand extends Command {
     return result
   }
 
-  deduplicate(colors: ColorData[]): DeduplicateResult {
-    const result = this.deduplicator.deduplicate(colors)
+  deduplicate(colors: ColorData[], priorityColors: ColorData[] = []): DeduplicateResult {
+    const result = this.deduplicator.deduplicate(colors, priorityColors)
     const stats: DeduplicateStats = {
       original: colors.length,
       unique: result.colors.length,

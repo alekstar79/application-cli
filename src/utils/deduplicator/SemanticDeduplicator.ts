@@ -14,7 +14,7 @@ export class SemanticDeduplicator {
   private analyzer = SemanticAnalyzer.init()
   private colorMetrics = ColorMetrics
 
-  deduplicate(colors: ColorData[]): DeduplicateRawResult {
+  deduplicate(colors: ColorData[], priorityColors: ColorData[] = []): DeduplicateRawResult {
     const totalColors = colors.length
     const progress = new ProgressBar({
       showSpeed: true,
@@ -43,7 +43,7 @@ export class SemanticDeduplicator {
       }
     }
 
-    // Choosing winners by HEX groups
+    // Choosing winners by HEX groups with priority consideration
     const hexWinners: ColorData[] = []
     const hexDuplicates: DuplicateGroup[] = []
 
@@ -51,13 +51,13 @@ export class SemanticDeduplicator {
       if (group.length === 1) {
         hexWinners.push(group[0])
       } else {
-        const winner = this.selectBestName(group)
+        const winner = this.selectBestName(group, priorityColors)
         hexWinners.push(winner)
         hexDuplicates.push({
           hex,
           names: group.map(g => g.name),
           selected: winner.name,
-          reason: `${this.getSelectionReason(group, winner)} | HEX`
+          reason: `${this.getSelectionReason(group, winner, priorityColors)} | HEX`
         })
       }
 
@@ -98,13 +98,13 @@ export class SemanticDeduplicator {
         finalResult.push(nameGroup[0])
       } else {
         // Choosing the best among HEX winners with the same name
-        const winner = this.selectBestName(nameGroup)
+        const winner = this.selectBestName(nameGroup, priorityColors)
         finalResult.push(winner)
         nameDuplicates.push({
           hex: nameGroup.map(c => c.hex).join(', '),
           names: nameGroup.map(g => g.name),
           selected: winner.name,
-          reason: `${this.getSelectionReason(nameGroup, winner)} | NAME`
+          reason: `${this.getSelectionReason(nameGroup, winner, priorityColors)} | NAME`
         })
       }
     }
@@ -117,9 +117,9 @@ export class SemanticDeduplicator {
     }
   }
 
-  private selectBestName(group: ColorData[]): ColorData {
+  private selectBestName(group: ColorData[], priorityColors: ColorData[] = []): ColorData {
     const scores = group.map((color, idx) => ({
-      score: this.calculateScore(color, group, idx),
+      score: this.calculateScore(color, group, idx, priorityColors),
       color
     }))
 
@@ -130,36 +130,52 @@ export class SemanticDeduplicator {
     return scores[0].color
   }
 
-  private calculateScore(color: ColorData, group: ColorData[], index: number): number {
+  private calculateScore(color: ColorData, group: ColorData[], index: number, priorityColors: ColorData[] = []): number {
     let score = 0
 
-    // 1. Semantic: 50%
-    const semanticScore = this.analyzer.scoreSemanticMatch(color)
-    score += semanticScore * 0.5
+    // 0. Priority bonus: 60% (highest priority)
+    if (priorityColors.some(pc =>
+      pc.hex.toLowerCase() === color.hex.toLowerCase() &&
+      pc.name.toLowerCase() === color.name.toLowerCase()
+    )) {
+      score += 60
+    }
 
-    // 2. Uniqueness: 25%
+    // 1. Semantic: 30% (reduced from 50%)
+    const semanticScore = this.analyzer.scoreSemanticMatch(color)
+    score += semanticScore * 0.3
+
+    // 2. Uniqueness: 15% (reduced from 25%)
     let minDistance = Infinity
     for (const other of group) {
       if (other === color) continue
       const dist = StringMetrics.damerauLevenshtein(color.name, other.name)
       minDistance = Math.min(minDistance, dist)
     }
-    score += Math.min(minDistance * 10, 100) * 0.25
+    score += Math.min(minDistance * 10, 100) * 0.15
 
-    // 3. Length: 15%
+    // 3. Length: 10% (reduced from 15%)
     const lengthScore = Math.max(0, 10 - Math.abs(color.name.length - 10))
-    score += lengthScore * 0.15
+    score += lengthScore * 0.1
 
-    // 4. Priority: 10%
+    // 4. Priority: 5% (reduced from 10%)
     const priorityScore = (group.length - index) * 5
-    score += priorityScore * 0.1
+    score += priorityScore * 0.05
 
     return score
   }
 
-  private getSelectionReason(group: ColorData[], winner: ColorData): string {
+  private getSelectionReason(group: ColorData[], winner: ColorData, priorityColors: ColorData[] = []): string {
     const reasons: string[] = []
     const names = group.map(g => g.name)
+
+    // Check if winner is from priority dataset
+    if (priorityColors.some(pc =>
+      pc.hex.toLowerCase() === winner.hex.toLowerCase() &&
+      pc.name.toLowerCase() === winner.name.toLowerCase()
+    )) {
+      reasons.push('Priority dataset')
+    }
 
     if (names.includes('gray') && names.includes('grey')) {
       reasons.push('CSS standard')
