@@ -321,7 +321,7 @@ export interface RecalcResult {
 export interface SortStats {
   original: number;
   sorted: number;
-  field: 'name' | 'hex' | 'hue';
+  field: 'family' | 'name' | 'hex' | 'hue';
   reverse: boolean;
   uniqueValues: number;
 }
